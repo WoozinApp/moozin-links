@@ -132,10 +132,11 @@
     const marketStore =
       "market://details?id=" + packageName;
 
-    // Abre o FEED PRINCIPAL do Moozin.
-    // Envia o ID para localizar o post original.
+    // Abre diretamente a publicação completa do Moozin.
+    // Não passa pelo feed principal.
     const appLink = validId
-      ? "woozin:///?postId=" + encodeURIComponent(postId)
+      ? "woozin:///comentarios?postId=" +
+        encodeURIComponent(postId)
       : "woozin:///";
 
     const openButton =
@@ -176,21 +177,26 @@
 
     // Tenta abrir o Moozin automaticamente.
     setTimeout(() => {
-      window.location.href = appLink;
+      if (validId) {
+        window.location.href = appLink;
+      } else {
+        message.textContent =
+          "Link de publicação inválido.";
+      }
     }, 300);
 
     // Se o aplicativo não abrir,
     // tenta redirecionar para a Google Play.
     setTimeout(() => {
+      if (!validId) return;
+
       if (!appOpened && !document.hidden) {
         message.textContent =
-          "Redirecionando para a Google Play...";
+          "Não conseguiu abrir? Use o botão Abrir no Moozin ou instale o aplicativo.";
 
-        if (isAndroid) {
-          window.location.href = marketStore;
-        } else {
-          window.location.replace(playStore);
-        }
+        // O botão de download permanece disponível.
+        // Evita enviar quem já tem o app para a loja
+        // por uma falha temporária na abertura automática.
       }
     }, 2200);
   </script>
