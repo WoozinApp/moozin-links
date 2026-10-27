@@ -5,11 +5,33 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#9303FC">
+
   <title>Abrir no Moozin</title>
-  <meta name="description" content="Confira este conteúdo no Moozin!">
+  <meta name="description" content="Confira publicações, perfis e novidades no Moozin!">
+
+  <!-- Prévia dos links no WhatsApp, Discord e Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Moozin">
+  <meta property="og:title" content="Moozin | Social, Fashion e Fama">
+  <meta property="og:description" content="Confira publicações, perfis e novidades no Moozin!">
+  <meta property="og:url" content="https://woozinapp.github.io/moozin-links/">
+  <meta property="og:image" content="https://woozinapp.github.io/moozin-links/moozin-icon.png">
+  <meta property="og:image:secure_url" content="https://woozinapp.github.io/moozin-links/moozin-icon.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
+  <meta property="og:image:alt" content="Ícone oficial do Moozin">
+
+  <!-- Prévia para X/Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Moozin | Social, Fashion e Fama">
+  <meta name="twitter:description" content="Confira este conteúdo no Moozin!">
+  <meta name="twitter:image" content="https://woozinapp.github.io/moozin-links/moozin-icon.png">
 
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
@@ -61,7 +83,9 @@
     }
 
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     .btn {
@@ -107,91 +131,137 @@
   </main>
 
   <script>
-    const params = new URLSearchParams(window.location.search);
+    // Captura os parâmetros do link compartilhado.
+    const params = new URLSearchParams(
+      window.location.search
+    );
 
     const postId = params.get("id");
     const perfilId = params.get("perfil");
 
-    const validPost = postId !== null && /^\d+$/.test(postId);
+    // Valida o ID numérico da publicação.
+    const validPost =
+      postId !== null && /^\d+$/.test(postId);
 
-    // IDs dos usuários no Supabase são UUIDs.
-    const validPerfil = perfilId !== null &&
+    // Valida o UUID do perfil do Supabase.
+    const validPerfil =
+      perfilId !== null &&
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(perfilId);
 
+    // Pacote Android do Moozin.
     const packageName = "com.woozfans.app";
 
+    // Endereço da Google Play.
     const playStore =
       "https://play.google.com/store/apps/details?id=" +
       packageName;
 
-    const isAndroid = /Android/i.test(navigator.userAgent);
-    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    // Identifica o dispositivo.
+    const isAndroid =
+      /Android/i.test(navigator.userAgent);
 
-    const title = document.getElementById("title");
-    const message = document.getElementById("message");
-    const loader = document.getElementById("loader");
-    const openButton = document.getElementById("openApp");
-    const downloadButton = document.getElementById("downloadApp");
+    const isIOS =
+      /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    // Elementos da página.
+    const title =
+      document.getElementById("title");
+
+    const message =
+      document.getElementById("message");
+
+    const loader =
+      document.getElementById("loader");
+
+    const openButton =
+      document.getElementById("openApp");
+
+    const downloadButton =
+      document.getElementById("downloadApp");
 
     let appLink = "woozin:///";
     let linkValido = false;
 
+    // Compartilhamento de perfil.
     if (validPerfil) {
-      appLink = "woozin:///usuario/" +
+      appLink =
+        "woozin:///usuario/" +
         encodeURIComponent(perfilId);
 
       title.textContent = "Abrindo perfil...";
+
       message.textContent =
         "Estamos tentando abrir este perfil no Moozin.";
+
       linkValido = true;
 
+    // Compartilhamento de publicação.
     } else if (validPost) {
-      appLink = "woozin:///comentarios?postId=" +
+      appLink =
+        "woozin:///comentarios?postId=" +
         encodeURIComponent(postId);
 
       title.textContent = "Abrindo publicação...";
+
       message.textContent =
         "Estamos tentando abrir esta publicação no Moozin.";
+
       linkValido = true;
 
+    // Link inválido.
     } else {
       title.textContent = "Link inválido";
+
       message.textContent =
         "Este link não contém uma publicação ou perfil válido.";
+
       loader.style.display = "none";
       openButton.style.display = "none";
     }
 
+    // Botão para abrir o aplicativo.
     openButton.href = appLink;
 
+    // Configura a loja conforme o dispositivo.
     if (isAndroid) {
       downloadButton.href = playStore;
-      downloadButton.textContent = "Baixar na Google Play";
+      downloadButton.textContent =
+        "Baixar na Google Play";
+
     } else if (isIOS) {
-      // Atualizar quando tivermos o endereço oficial da App Store.
+      // Adicionar o endereço da App Store
+      // quando a versão iOS estiver publicada.
       downloadButton.style.display = "none";
+
     } else {
       downloadButton.href = playStore;
-      downloadButton.textContent = "Ver na Google Play";
+      downloadButton.textContent =
+        "Ver na Google Play";
     }
 
     let appOpened = false;
 
-    document.addEventListener("visibilitychange", () => {
-      if (document.hidden) appOpened = true;
-    });
+    // Detecta quando o navegador fica oculto.
+    document.addEventListener(
+      "visibilitychange",
+      () => {
+        if (document.hidden) {
+          appOpened = true;
+        }
+      }
+    );
 
     window.addEventListener("pagehide", () => {
       appOpened = true;
     });
 
-    // Tenta abrir o aplicativo automaticamente.
+    // Tenta abrir o Moozin automaticamente.
     if (linkValido) {
       setTimeout(() => {
         window.location.href = appLink;
       }, 300);
 
-      // Não deixa a animação carregando para sempre.
+      // Encerra o carregamento após a tentativa.
       setTimeout(() => {
         loader.style.display = "none";
 
