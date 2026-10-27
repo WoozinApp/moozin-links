@@ -5,13 +5,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#9303FC">
-  <title>Abrindo publicação | Moozin</title>
-  <meta name="description" content="Confira esta publicação no Moozin!">
+  <title>Abrir no Moozin</title>
+  <meta name="description" content="Confira este conteúdo no Moozin!">
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -63,9 +61,7 @@
     }
 
     @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
+      to { transform: rotate(360deg); }
     }
 
     .btn {
@@ -93,12 +89,12 @@
   <main class="card">
     <div class="logo">Moozin</div>
 
-    <h1>Abrindo publicação...</h1>
+    <h1 id="title">Abrindo Moozin...</h1>
 
     <div class="loader" id="loader"></div>
 
     <p id="message">
-      Estamos tentando abrir esta publicação no aplicativo.
+      Estamos tentando abrir o aplicativo.
     </p>
 
     <a class="btn primary" id="openApp">
@@ -111,94 +107,100 @@
   </main>
 
   <script>
-    // Captura o ID da publicação compartilhada.
-    const params = new URLSearchParams(
-      window.location.search
-    );
+    const params = new URLSearchParams(window.location.search);
 
     const postId = params.get("id");
+    const perfilId = params.get("perfil");
 
-    // Verifica se o ID é válido.
-    const validId = postId && /^\d+$/.test(postId);
+    const validPost = postId !== null && /^\d+$/.test(postId);
 
-    // Pacote Android do Moozin.
+    // IDs dos usuários no Supabase são UUIDs.
+    const validPerfil = perfilId !== null &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(perfilId);
+
     const packageName = "com.woozfans.app";
 
-    // Endereço da Google Play.
     const playStore =
       "https://play.google.com/store/apps/details?id=" +
       packageName;
 
-    const marketStore =
-      "market://details?id=" + packageName;
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-    // Abre diretamente a publicação completa do Moozin.
-    // Não passa pelo feed principal.
-    const appLink = validId
-      ? "woozin:///comentarios?postId=" +
-        encodeURIComponent(postId)
-      : "woozin:///";
+    const title = document.getElementById("title");
+    const message = document.getElementById("message");
+    const loader = document.getElementById("loader");
+    const openButton = document.getElementById("openApp");
+    const downloadButton = document.getElementById("downloadApp");
 
-    const openButton =
-      document.getElementById("openApp");
+    let appLink = "woozin:///";
+    let linkValido = false;
 
-    const downloadButton =
-      document.getElementById("downloadApp");
+    if (validPerfil) {
+      appLink = "woozin:///usuario/" +
+        encodeURIComponent(perfilId);
 
-    const message =
-      document.getElementById("message");
+      title.textContent = "Abrindo perfil...";
+      message.textContent =
+        "Estamos tentando abrir este perfil no Moozin.";
+      linkValido = true;
 
-    const isAndroid =
-      /Android/i.test(navigator.userAgent);
+    } else if (validPost) {
+      appLink = "woozin:///comentarios?postId=" +
+        encodeURIComponent(postId);
 
-    // Configura os botões.
+      title.textContent = "Abrindo publicação...";
+      message.textContent =
+        "Estamos tentando abrir esta publicação no Moozin.";
+      linkValido = true;
+
+    } else {
+      title.textContent = "Link inválido";
+      message.textContent =
+        "Este link não contém uma publicação ou perfil válido.";
+      loader.style.display = "none";
+      openButton.style.display = "none";
+    }
+
     openButton.href = appLink;
 
-    downloadButton.href = isAndroid
-      ? marketStore
-      : playStore;
+    if (isAndroid) {
+      downloadButton.href = playStore;
+      downloadButton.textContent = "Baixar na Google Play";
+    } else if (isIOS) {
+      // Atualizar quando tivermos o endereço oficial da App Store.
+      downloadButton.style.display = "none";
+    } else {
+      downloadButton.href = playStore;
+      downloadButton.textContent = "Ver na Google Play";
+    }
 
     let appOpened = false;
 
-    // Detecta quando o navegador vai para
-    // segundo plano após abrir o aplicativo.
-    document.addEventListener(
-      "visibilitychange",
-      () => {
-        if (document.hidden) {
-          appOpened = true;
-        }
-      }
-    );
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) appOpened = true;
+    });
 
     window.addEventListener("pagehide", () => {
       appOpened = true;
     });
 
-    // Tenta abrir o Moozin automaticamente.
-    setTimeout(() => {
-      if (validId) {
+    // Tenta abrir o aplicativo automaticamente.
+    if (linkValido) {
+      setTimeout(() => {
         window.location.href = appLink;
-      } else {
-        message.textContent =
-          "Link de publicação inválido.";
-      }
-    }, 300);
+      }, 300);
 
-    // Se o aplicativo não abrir,
-    // tenta redirecionar para a Google Play.
-    setTimeout(() => {
-      if (!validId) return;
+      // Não deixa a animação carregando para sempre.
+      setTimeout(() => {
+        loader.style.display = "none";
 
-      if (!appOpened && !document.hidden) {
-        message.textContent =
-          "Não conseguiu abrir? Use o botão Abrir no Moozin ou instale o aplicativo.";
-
-        // O botão de download permanece disponível.
-        // Evita enviar quem já tem o app para a loja
-        // por uma falha temporária na abertura automática.
-      }
-    }, 2200);
+        if (!appOpened && !document.hidden) {
+          message.textContent =
+            "Não abriu automaticamente? Toque em Abrir no Moozin.";
+        }
+      }, 2200);
+    }
   </script>
 </body>
 </html>
