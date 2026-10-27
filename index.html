@@ -9,7 +9,9 @@
   <meta name="description" content="Confira esta publicação no Moozin!">
 
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
@@ -61,7 +63,9 @@
     }
 
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     .btn {
@@ -107,13 +111,20 @@
   </main>
 
   <script>
-    const params = new URLSearchParams(window.location.search);
+    // Captura o ID da publicação compartilhada.
+    const params = new URLSearchParams(
+      window.location.search
+    );
+
     const postId = params.get("id");
 
+    // Verifica se o ID é válido.
     const validId = postId && /^\d+$/.test(postId);
 
+    // Pacote Android do Moozin.
     const packageName = "com.woozfans.app";
 
+    // Endereço da Google Play.
     const playStore =
       "https://play.google.com/store/apps/details?id=" +
       packageName;
@@ -121,30 +132,43 @@
     const marketStore =
       "market://details?id=" + packageName;
 
-    // Rota correta do Expo Router:
-    // src/app/publicacao/[id].tsx
+    // Abre o FEED PRINCIPAL do Moozin.
+    // Envia o ID para localizar o post original.
     const appLink = validId
-      ? "woozin:///publicacao/" + encodeURIComponent(postId)
+      ? "woozin:///?postId=" + encodeURIComponent(postId)
       : "woozin:///";
 
-    const openButton = document.getElementById("openApp");
-    const downloadButton = document.getElementById("downloadApp");
-    const message = document.getElementById("message");
+    const openButton =
+      document.getElementById("openApp");
 
-    const isAndroid = /Android/i.test(navigator.userAgent);
+    const downloadButton =
+      document.getElementById("downloadApp");
 
+    const message =
+      document.getElementById("message");
+
+    const isAndroid =
+      /Android/i.test(navigator.userAgent);
+
+    // Configura os botões.
     openButton.href = appLink;
+
     downloadButton.href = isAndroid
       ? marketStore
       : playStore;
 
     let appOpened = false;
 
-    document.addEventListener("visibilitychange", () => {
-      if (document.hidden) {
-        appOpened = true;
+    // Detecta quando o navegador vai para
+    // segundo plano após abrir o aplicativo.
+    document.addEventListener(
+      "visibilitychange",
+      () => {
+        if (document.hidden) {
+          appOpened = true;
+        }
       }
-    });
+    );
 
     window.addEventListener("pagehide", () => {
       appOpened = true;
@@ -155,8 +179,8 @@
       window.location.href = appLink;
     }, 300);
 
-    // Se não abrir, tenta redirecionar
-    // para a Google Play após 2,2 segundos.
+    // Se o aplicativo não abrir,
+    // tenta redirecionar para a Google Play.
     setTimeout(() => {
       if (!appOpened && !document.hidden) {
         message.textContent =
