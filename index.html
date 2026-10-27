@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#9303FC">
   <title>Abrindo Moozin...</title>
-  <meta name="description" content="Confira esta publicação no Moozin!">
 
   <style>
     * { box-sizing: border-box; }
@@ -15,7 +14,7 @@
       margin: 0;
       min-height: 100vh;
       background: #100719;
-      color: #fff;
+      color: white;
       font-family: Arial, sans-serif;
       display: flex;
       align-items: center;
@@ -39,15 +38,11 @@
       color: #b95cff;
     }
 
-    h1 {
-      font-size: 23px;
-      margin: 20px 0 12px;
-    }
+    h1 { font-size: 23px; }
 
     p {
       color: #cbbbd6;
       line-height: 1.6;
-      font-size: 15px;
     }
 
     .loader {
@@ -66,7 +61,7 @@
 
     .btn {
       display: block;
-      padding: 15px;
+      padding: 16px;
       margin-top: 14px;
       border-radius: 12px;
       text-decoration: none;
@@ -89,12 +84,13 @@
   <main class="card">
     <div class="logo">Moozin</div>
 
-    <h1>Abrindo publicação...</h1>
+    <h1 id="title">Abrindo publicação...</h1>
 
     <div class="loader"></div>
 
     <p id="message">
-      Estamos tentando abrir a publicação no Moozin.
+      Tentando abrir o Moozin.
+      Se não estiver instalado, abriremos a Google Play.
     </p>
 
     <a class="btn primary" id="openApp">
@@ -102,7 +98,7 @@
     </a>
 
     <a class="btn secondary" id="downloadApp">
-      Baixar na Google Play
+      Abrir Google Play
     </a>
   </main>
 
@@ -120,65 +116,66 @@
     const playMarket =
       "market://details?id=" + packageName;
 
+    const playIntent =
+      "intent://details?id=" + packageName +
+      "#Intent;scheme=market;" +
+      "package=com.android.vending;" +
+      "S.browser_fallback_url=" +
+      encodeURIComponent(playWeb) +
+      ";end";
+
     const appLink = validId
       ? "woozin:///publicacao?id=" + encodeURIComponent(postId)
       : "woozin:///";
 
-    const openButton = document.getElementById("openApp");
-    const downloadButton = document.getElementById("downloadApp");
-    const message = document.getElementById("message");
-
-    openButton.href = appLink;
-    downloadButton.href = playWeb;
-
     const isAndroid = /Android/i.test(navigator.userAgent);
 
-    let pageHidden = false;
+    const title = document.getElementById("title");
+    const message = document.getElementById("message");
+    const openApp = document.getElementById("openApp");
+    const downloadApp = document.getElementById("downloadApp");
+
+    openApp.href = appLink;
+    downloadApp.href = isAndroid ? playMarket : playWeb;
+
+    let leftPage = false;
 
     document.addEventListener("visibilitychange", () => {
-      if (document.hidden) pageHidden = true;
+      if (document.hidden) leftPage = true;
     });
 
     window.addEventListener("pagehide", () => {
-      pageHidden = true;
+      leftPage = true;
     });
 
-    function openStore() {
-      message.textContent = "Abrindo a Google Play...";
+    // Primeiro tenta abrir o aplicativo Moozin.
+    setTimeout(() => {
+      if (isAndroid) {
+        location.href = appLink;
+      }
+    }, 300);
+
+    // Depois de 5 segundos, tenta abrir
+    // diretamente o aplicativo da Google Play.
+    setTimeout(() => {
+      if (leftPage || document.hidden) return;
+
+      title.textContent = "Abrindo Google Play...";
+      message.textContent =
+        "Estamos redirecionando você para baixar o Moozin.";
 
       if (isAndroid) {
-        // Solicita a abertura do aplicativo Google Play.
-        location.href = playMarket;
-
-        // Alternativa caso a loja não seja aberta.
-        setTimeout(() => {
-          if (!pageHidden && !document.hidden) {
-            message.textContent =
-              "Se a loja não abriu, toque em Baixar na Google Play.";
-          }
-        }, 1500);
+        location.href = playIntent;
       } else {
         location.href = playWeb;
       }
-    }
+    }, 5000);
 
-    // Tenta abrir a publicação no aplicativo.
-    setTimeout(() => {
-      location.href = appLink;
-    }, 300);
-
-    // Se a página continuar aberta, tenta a loja.
-    setTimeout(() => {
-      if (!pageHidden && !document.hidden) {
-        openStore();
-      }
-    }, 2200);
-
-    // Botão manual para abrir a loja.
-    downloadButton.addEventListener("click", (event) => {
+    // Alternativa manual caso o navegador bloqueie.
+    downloadApp.addEventListener("click", (event) => {
       if (isAndroid) {
         event.preventDefault();
-        openStore();
+        location.href = playMarket;
       }
     });
   </script>
