@@ -112,19 +112,31 @@
 
     const validId = postId && /^\d+$/.test(postId);
 
-    const playStore =
-      "https://play.google.com/store/apps/details?id=com.woozfans.app";
+    const packageName = "com.woozfans.app";
 
+    const playStore =
+      "https://play.google.com/store/apps/details?id=" +
+      packageName;
+
+    const marketStore =
+      "market://details?id=" + packageName;
+
+    // Rota correta do Expo Router:
+    // src/app/publicacao/[id].tsx
     const appLink = validId
-      ? "woozin:///publicacao?id=" + encodeURIComponent(postId)
+      ? "woozin:///publicacao/" + encodeURIComponent(postId)
       : "woozin:///";
 
     const openButton = document.getElementById("openApp");
     const downloadButton = document.getElementById("downloadApp");
     const message = document.getElementById("message");
 
+    const isAndroid = /Android/i.test(navigator.userAgent);
+
     openButton.href = appLink;
-    downloadButton.href = playStore;
+    downloadButton.href = isAndroid
+      ? marketStore
+      : playStore;
 
     let appOpened = false;
 
@@ -138,17 +150,23 @@
       appOpened = true;
     });
 
-    // Tenta abrir o aplicativo.
+    // Tenta abrir o Moozin automaticamente.
     setTimeout(() => {
       window.location.href = appLink;
     }, 300);
 
-    // Se a página continuar visível, tenta abrir a Play Store.
+    // Se não abrir, tenta redirecionar
+    // para a Google Play após 2,2 segundos.
     setTimeout(() => {
       if (!appOpened && !document.hidden) {
         message.textContent =
           "Redirecionando para a Google Play...";
-        window.location.replace(playStore);
+
+        if (isAndroid) {
+          window.location.href = marketStore;
+        } else {
+          window.location.replace(playStore);
+        }
       }
     }, 2200);
   </script>
