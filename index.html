@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#9303FC">
-  <title>Abrindo Moozin...</title>
+  <title>Abrindo publicação | Moozin</title>
   <meta name="description" content="Confira esta publicação no Moozin!">
 
   <style>
@@ -15,7 +15,7 @@
       margin: 0;
       min-height: 100vh;
       background: #100719;
-      color: #fff;
+      color: white;
       font-family: Arial, sans-serif;
       display: flex;
       align-items: center;
@@ -91,10 +91,10 @@
 
     <h1>Abrindo publicação...</h1>
 
-    <div class="loader"></div>
+    <div class="loader" id="loader"></div>
 
     <p id="message">
-      Estamos tentando abrir a publicação no Moozin.
+      Estamos tentando abrir esta publicação no aplicativo.
     </p>
 
     <a class="btn primary" id="openApp">
@@ -107,18 +107,13 @@
   </main>
 
   <script>
-    const params = new URLSearchParams(location.search);
+    const params = new URLSearchParams(window.location.search);
     const postId = params.get("id");
+
     const validId = postId && /^\d+$/.test(postId);
 
-    const packageName = "com.woozfans.app";
-
-    const playWeb =
-      "https://play.google.com/store/apps/details?id=" +
-      packageName;
-
-    const playMarket =
-      "market://details?id=" + packageName;
+    const playStore =
+      "https://play.google.com/store/apps/details?id=com.woozfans.app";
 
     const appLink = validId
       ? "woozin:///publicacao?id=" + encodeURIComponent(postId)
@@ -129,58 +124,33 @@
     const message = document.getElementById("message");
 
     openButton.href = appLink;
-    downloadButton.href = playWeb;
+    downloadButton.href = playStore;
 
-    const isAndroid = /Android/i.test(navigator.userAgent);
-
-    let pageHidden = false;
+    let appOpened = false;
 
     document.addEventListener("visibilitychange", () => {
-      if (document.hidden) pageHidden = true;
+      if (document.hidden) {
+        appOpened = true;
+      }
     });
 
     window.addEventListener("pagehide", () => {
-      pageHidden = true;
+      appOpened = true;
     });
 
-    function openStore() {
-      message.textContent = "Abrindo a Google Play...";
-
-      if (isAndroid) {
-        // Solicita a abertura do aplicativo Google Play.
-        location.href = playMarket;
-
-        // Alternativa caso a loja não seja aberta.
-        setTimeout(() => {
-          if (!pageHidden && !document.hidden) {
-            message.textContent =
-              "Se a loja não abriu, toque em Baixar na Google Play.";
-          }
-        }, 1500);
-      } else {
-        location.href = playWeb;
-      }
-    }
-
-    // Tenta abrir a publicação no aplicativo.
+    // Tenta abrir o aplicativo.
     setTimeout(() => {
-      location.href = appLink;
+      window.location.href = appLink;
     }, 300);
 
-    // Se a página continuar aberta, tenta a loja.
+    // Se a página continuar visível, tenta abrir a Play Store.
     setTimeout(() => {
-      if (!pageHidden && !document.hidden) {
-        openStore();
+      if (!appOpened && !document.hidden) {
+        message.textContent =
+          "Redirecionando para a Google Play...";
+        window.location.replace(playStore);
       }
     }, 2200);
-
-    // Botão manual para abrir a loja.
-    downloadButton.addEventListener("click", (event) => {
-      if (isAndroid) {
-        event.preventDefault();
-        openStore();
-      }
-    });
   </script>
 </body>
 </html>
